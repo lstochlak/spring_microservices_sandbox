@@ -1,0 +1,60 @@
+openapi: "3.1.0"
+info:
+  title: "spring_microservices_sandbox API"
+  description: "spring_microservices_sandbox API"
+  version: "1.0.0"
+servers:
+  - url: "https://localhost:8090"
+paths:
+  /api/currency/nbpSell/{code}/{date}:
+    get:
+      summary: "GET api/currency/nbpSell/{code}/{date}"
+      operationId: "getSellExchangeRate"
+      parameters:
+        - name: "code"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - name: "date"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "number"
+                format: "double"
+  /api/currency/nbpPurchase/{date}:
+    get:
+      summary: "GET api/currency/nbpPurchase/{date}"
+      operationId: "getPurchaseCost"
+      parameters:
+        - name: "date"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+          example: "2024-06-25"
+      requestBody:
+        description: "List of currency codes according to ISO 4217 standard."
+        content:
+          application/json:
+            schema:
+              type: "array"
+              items:
+                type: "string"
+            example: "['USD', 'AUD', 'CAD']"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "number"
+                format: "double"
