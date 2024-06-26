@@ -13,23 +13,21 @@
 //------------------------------------------------------------------------------
 package ls.sandbox.nbp.dto;
 
-import java.io.Serializable;
 import java.util.Date;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * DTO for {@link ls.sandbox.nbp.model.NbpMiddleExchangeRate}
  *
  * @author Lukasz.Stochlak
  */
-@Value
-public class NbpMiddleExchangeRateDto implements Serializable
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+public class NbpMiddleExchangeRateDto extends ExchangeRateDto
 {
-    long id;
-
-    Date date;
-
-    double rate;
-
-    CurrencyDto currency;
+    public NbpMiddleExchangeRateDto(long id, Date date, double rate, CurrencyDto currency)
+    {
+        super(id, date, rate, currency);
+    }
 }

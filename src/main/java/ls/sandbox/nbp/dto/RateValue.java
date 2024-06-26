@@ -4,7 +4,7 @@
 //
 // Sub-System : ls.sandbox.nbp.dto
 //
-// File Name : NbpTableData.java
+// File Name : RateValue.java
 //
 // Author : Lukasz.Stochlak
 //
@@ -14,28 +14,22 @@
 package ls.sandbox.nbp.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import java.util.List;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import java.io.Serializable;
+import lombok.Value;
 
 /**
- * Represents data returned from table C by NBP service.
+ * Single rate value from NBP table (response from NBP service - optimized to be used for both tables A and C).
  *
  * @author Lukasz.Stochlak
  */
-@Getter
-@Setter
-@EqualsAndHashCode
-@ToString
+@Value
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class NbpTableData
+public class RateValue implements Serializable
 {
-    private String currency;
+    String effectiveDate;
 
-    private String code;
+    String mid;
 
-    private List<NbpRateValue> rates;
+    String ask;
 }
 //------------------------------------------------------------------------------

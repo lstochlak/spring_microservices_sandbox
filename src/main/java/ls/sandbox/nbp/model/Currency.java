@@ -20,7 +20,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
 
 /**
@@ -32,10 +31,8 @@ import org.hibernate.proxy.HibernateProxy;
 @Table(name = "currencies")
 @Getter
 @Setter
-@ToString
 public class Currency
 {
-
     @Id
     @Column(name = "code")
     private String code;
@@ -50,7 +47,7 @@ public class Currency
         {
             return true;
         }
-        if (o == null || getClass() != o.getClass())
+        if (o == null)
         {
             return false;
         }
@@ -78,5 +75,10 @@ public class Currency
                 .getPersistentClass().hashCode() : Objects.hash(getCode(), getCurrency());
     }
 
+    @Override
+    public String toString()
+    {
+        return "Currency{" + "code='" + code + '\'' + ", currency='" + currency + '\'' + '}';
+    }
 }
 //------------------------------------------------------------------------------

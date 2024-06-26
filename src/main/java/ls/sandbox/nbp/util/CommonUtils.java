@@ -60,7 +60,7 @@ public class CommonUtils
      * Formats date to string in "yyyy-MM-dd" pattern (ISO 8601 standard).
      *
      * @param date date to be formatted.
-     * @return date formatted as stringin "yyyy-MM-dd" pattern (ISO 8601 standard).
+     * @return date formatted as string in "yyyy-MM-dd" pattern (ISO 8601 standard).
      */
     public static String toStringFromDate(Date date)
     {
