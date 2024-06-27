@@ -24,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -65,7 +66,7 @@ public class NbpCurrencyController
      * @param currencyCodes list of currency codes according to ISO 4217 standard
      * @return total purchasing cost.
      */
-    @GetMapping("/nbpPurchase/{date}")
+    @PostMapping("/nbpPurchase/{date}")
     public Double getPurchaseCost(@PathVariable("date") String date, @RequestBody List<String> currencyCodes)
     {
         return nbpMiddleExchangeRateService.getPurchaseCost(CommonUtils.parseDateFromString(date), currencyCodes);

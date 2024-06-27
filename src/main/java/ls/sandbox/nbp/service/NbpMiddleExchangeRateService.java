@@ -17,7 +17,7 @@ import java.util.Date;
 import java.util.List;
 import javax.persistence.EntityNotFoundException;
 import lombok.extern.log4j.Log4j2;
-import ls.sandbox.nbp.dto.NbpTableData;
+import ls.sandbox.nbp.dto.TableData;
 import ls.sandbox.nbp.model.Currency;
 import ls.sandbox.nbp.model.NbpMiddleExchangeRate;
 import ls.sandbox.nbp.repository.CurrencyRepository;
@@ -76,7 +76,7 @@ public class NbpMiddleExchangeRateService
                                                   + " not found in local DB.");
 
                               //call NBP service
-                              NbpTableData nbpTableData = getRateFromNbpService(code, dateAsString);
+                              TableData nbpTableData = getRateFromNbpService(code, dateAsString);
 
                               result[0] += Double.parseDouble(nbpTableData.getRates().get(0).getMid());
                           }
@@ -92,19 +92,19 @@ public class NbpMiddleExchangeRateService
         return result[0];
     }
 
-    private NbpTableData getRateFromNbpService(String code, String dateAsString)
+    private TableData getRateFromNbpService(String code, String dateAsString)
     {
         RestTemplate restTemplate = restTemplateBuilder.build();
 
-        NbpTableData nbpTableData =
+        TableData nbpTableData =
                 restTemplate.getForObject("http://api.nbp.pl/api/exchangerates/rates/A/{code}/{date}",
-                                          NbpTableData.class, code, dateAsString);
+                                          TableData.class, code, dateAsString);
 
         cacheRate(nbpTableData);
         return nbpTableData;
     }
 
-    private void cacheRate(NbpTableData nbpTableData)
+    private void cacheRate(TableData nbpTableData)
     {
         Currency currency = new Currency();
         currency.setCode(nbpTableData.getCode());

@@ -13,19 +13,8 @@
 //------------------------------------------------------------------------------
 package ls.sandbox.nbp.model;
 
-import java.util.Date;
-import java.util.Objects;
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
 
 /**
@@ -35,25 +24,8 @@ import org.hibernate.proxy.HibernateProxy;
  */
 @Entity(name = "NbpMiddleExchangeRate")
 @Table(name = "nbp_mids")
-@Getter
-@Setter
-@ToString
-public class NbpMiddleExchangeRate
+public class NbpMiddleExchangeRate extends ExchangeRate
 {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
-
-    @Column(name = "date", nullable = false)
-    private Date date;
-
-    @Column(name = "rate", nullable = false)
-    private double rate;
-
-    @ManyToOne(targetEntity = Currency.class, optional = false)
-    @JoinColumn(name = "curr_code")
-    private Currency currency;
-
     @Override
     public boolean equals(Object o)
     {
@@ -61,11 +33,10 @@ public class NbpMiddleExchangeRate
         {
             return true;
         }
-        if (o == null || getClass() != o.getClass())
+        if (o == null)
         {
             return false;
         }
-
         Class<?> oEffectiveClass =
                 o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass()
                                             : o.getClass();
@@ -76,18 +47,20 @@ public class NbpMiddleExchangeRate
         {
             return false;
         }
-
-        NbpMiddleExchangeRate that = (NbpMiddleExchangeRate) o;
-        return getId() == that.getId() && Double.compare(getRate(), that.getRate()) == 0 && Objects.equals(getDate(),
-                                                                                                           that.getDate())
-               && Objects.equals(getCurrency(), that.getCurrency());
+        return super.equals(o);
     }
 
     @Override
     public int hashCode()
     {
         return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer()
-                .getPersistentClass().hashCode() : Objects.hash(getId(), getDate(), getRate(), getCurrency());
+                .getPersistentClass().hashCode() : super.hashCode();
+    }
+
+    @Override
+    public String toString()
+    {
+        return "NbpMiddleExchangeRate{" + "id=" + getId() + ", date=" + getDate() + ", rate=" + getRate() + ", currency=" + getCurrency() + '}';
     }
 }
 //------------------------------------------------------------------------------
