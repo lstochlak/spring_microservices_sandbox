@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Controller for currency micro-service.
@@ -56,7 +57,25 @@ public class NbpCurrencyController
     @GetMapping("/nbpSell/{code}/{date}")
     public Double getSellExchangeRate(@PathVariable("code") String code, @PathVariable("date") String date)
     {
-        return nbpSellExchangeRateService.getSellRate(code, CommonUtils.parseDateFromString(date));
+        Double result = null;
+
+        try
+        {
+            result = nbpSellExchangeRateService.getSellRate(code, CommonUtils.parseDateFromString(date));
+        }
+        catch (Exception e)
+        {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error! " + e.getMessage(),
+                                              e);
+        }
+
+        if (null == result)
+        {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                              "Exchange rate not found for code=" + code + " date=" + date + " !");
+        }
+
+        return result;
     }
 
     /**
@@ -69,7 +88,26 @@ public class NbpCurrencyController
     @PostMapping("/nbpPurchase/{date}")
     public Double getPurchaseCost(@PathVariable("date") String date, @RequestBody List<String> currencyCodes)
     {
-        return nbpMiddleExchangeRateService.getPurchaseCost(CommonUtils.parseDateFromString(date), currencyCodes);
+        Double result = null;
+
+        try
+        {
+            result = nbpMiddleExchangeRateService.getPurchaseCost(CommonUtils.parseDateFromString(date), currencyCodes);
+        }
+        catch (Exception e)
+        {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error! " + e.getMessage(),
+                                              e);
+        }
+
+        if (null == result)
+        {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                              "Purchase cost can't be evaluated for code=" + currencyCodes + " date="
+                                              + date + " !");
+        }
+
+        return result;
     }
 
     @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Value not found!")

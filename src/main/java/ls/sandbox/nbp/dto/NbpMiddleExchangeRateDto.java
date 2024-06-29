@@ -26,7 +26,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 public class NbpMiddleExchangeRateDto extends ExchangeRateDto
 {
-    public NbpMiddleExchangeRateDto(long id, Date date, double rate, CurrencyDto currency)
+    public NbpMiddleExchangeRateDto(Long id, Date date, Double rate, CurrencyDto currency)
     {
         super(id, date, rate, currency);
     }

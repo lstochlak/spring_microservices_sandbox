@@ -14,19 +14,11 @@
 package ls.sandbox.nbp.service;
 
 import java.util.Date;
-import javax.persistence.EntityNotFoundException;
 import lombok.extern.log4j.Log4j2;
-import ls.sandbox.nbp.dto.TableData;
-import ls.sandbox.nbp.model.Currency;
-import ls.sandbox.nbp.model.NbpSellExchangeRate;
-import ls.sandbox.nbp.repository.CurrencyRepository;
-import ls.sandbox.nbp.repository.NbpSellExchangeRateRepository;
+import ls.sandbox.nbp.dto.NbpSellExchangeRateDto;
 import ls.sandbox.nbp.util.CommonUtils;
-import org.apache.logging.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * Service for NBP sell exchange rate.
@@ -37,14 +29,12 @@ import org.springframework.web.client.RestTemplate;
 @Log4j2
 public class NbpSellExchangeRateService
 {
-    @Autowired
-    private NbpSellExchangeRateRepository nbpSellExchangeRateRepository;
 
     @Autowired
-    private CurrencyRepository currencyRepository;
+    private LocalCacheService localCacheService;
 
     @Autowired
-    RestTemplateBuilder restTemplateBuilder;
+    private NbpRemoteService nbpRemoteService;
 
     /**
      * Returns NBP sell exchange rate for selected currency and date.
@@ -55,63 +45,45 @@ public class NbpSellExchangeRateService
      * @param code currency code according to ISO 4217 standard
      * @return sell exchange rate
      */
-    public double getSellRate(String code, Date date)
+    public Double getSellRate(String code, Date date)
     {
-        double result = -1.0;
+        Double result = null;
+        String dateAsString = CommonUtils.toStringFromDate(date);
 
         try
         {
-            result = nbpSellExchangeRateRepository.findByCodeAndDate(code, date).getRate();
-        }
-        catch (EntityNotFoundException | NullPointerException e)
-        {
-            String dateAsString = CommonUtils.toStringFromDate(date);
+            NbpSellExchangeRateDto localRateDto = localCacheService.findSellExchangeRate(code, date);
 
-            log.log(Level.INFO,
-                    "Exchange rate for code=" + code + " and date=" + dateAsString + " not found in local DB.");
+            if (null != localRateDto)
+            {
+                result = localRateDto.getRate();
 
-            //call NBP service
-            TableData nbpTableData = getRateFromNbpService(code, dateAsString);
+                log.debug("Sell exchange rate for code={} and date={} found in local DB! -> {}", code, dateAsString, result);
+            }
+            else
+            {
+                log.info("Sell exchange rate for code={} and date={} not found in local DB.", code, dateAsString);
 
-            result = Double.parseDouble(nbpTableData.getRates().get(0).getAsk());
+                //call NBP service
+                NbpSellExchangeRateDto rateDto = nbpRemoteService.getSellExchangeRateFromNbpService(code, date);
+
+                if (null != rateDto)
+                {
+                    localCacheService.cacheSellExchangeRate(rateDto);
+
+                    result = rateDto.getRate();
+                }
+
+            }
         }
         catch (Exception e)
         {
-            log.log(Level.ERROR, "Unexpected exception! " + e.getMessage(), e);
+            log.error(CommonUtils.UNEXPECTED_EXCEPTION, e.getMessage(), e);
 
             throw e;
         }
 
         return result;
     }
-
-    private TableData getRateFromNbpService(String code, String dateAsString)
-    {
-        RestTemplate restTemplate = restTemplateBuilder.build();
-
-        TableData nbpTableData =
-                restTemplate.getForObject("http://api.nbp.pl/api/exchangerates/rates/C/{code}/{date}",
-                                          TableData.class, code, dateAsString);
-
-        cacheRate(nbpTableData);
-
-        return nbpTableData;
-    }
-
-    private void cacheRate(TableData nbpTableData)
-    {
-        Currency currency = new Currency();
-        currency.setCode(nbpTableData.getCode());
-        currency.setCurrency(nbpTableData.getCurrency());
-
-        NbpSellExchangeRate nbpSellExchangeRate = new NbpSellExchangeRate();
-        nbpSellExchangeRate.setCurrency(currency);
-        nbpSellExchangeRate.setDate(CommonUtils.parseDateFromString(nbpTableData.getRates().get(0).getEffectiveDate()));
-        nbpSellExchangeRate.setRate(Double.parseDouble(nbpTableData.getRates().get(0).getAsk()));
-
-        currencyRepository.saveAndFlush(currency);
-        nbpSellExchangeRateRepository.saveAndFlush(nbpSellExchangeRate);
-    }
-
 }
 //------------------------------------------------------------------------------

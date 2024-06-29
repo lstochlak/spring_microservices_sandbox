@@ -26,6 +26,10 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class CommonUtils
 {
+    public static final String UNEXPECTED_EXCEPTION = "Unexpected exception! {}";
+
+    public static final String UNEXPECTED_REQUEST_FAIL = "Unexpected request fail! {}";
+
     /**
      * Empty hidden constructor.
      */
@@ -38,7 +42,7 @@ public class CommonUtils
      * Parses date from string. It expects "yyyy-MM-dd" format.
      *
      * @param date date as string in "yyyy-MM-dd" pattern (ISO 8601 standard)
-     * @return
+     * @return parsed date
      */
     public static Date parseDateFromString(String date)
     {
@@ -50,7 +54,7 @@ public class CommonUtils
         }
         catch (ParseException e)
         {
-            log.error("Unexpected exception! " + e.getMessage(), e);
+            log.error(UNEXPECTED_EXCEPTION, e.getMessage(), e);
         }
 
         return null;
