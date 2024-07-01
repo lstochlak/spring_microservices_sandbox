@@ -99,13 +99,13 @@ class NbpCurrencySpringBootAppTest
     {
         String date = CommonUtils.toStringFromDate(new Date());
 
-        HttpEntity<List<String>> request = new HttpEntity<>(Arrays.asList("USD", "AUD", "CAD"));
+        List<String> currencyCodes = Arrays.asList("USD", "AUD", "CAD");
 
         Double response = null;
 
         ResponseEntity<Double> responseEntity =
-                this.restTemplate.postForEntity("http://localhost:8090/api/currency/nbpPurchase/{date}", request,
-                                                Double.class, date);
+                this.restTemplate.getForEntity("http://localhost:8090/api/currency/nbpPurchase/{date}?currencyCodes={currencyCodes}",
+                                                Double.class, date, currencyCodes);
 
         Assertions.assertNotNull(responseEntity);
 

@@ -14,19 +14,20 @@
 package ls.sandbox.nbp.controller;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityNotFoundException;
+import javax.websocket.server.PathParam;
 import lombok.extern.log4j.Log4j2;
 import ls.sandbox.nbp.service.NbpMiddleExchangeRateService;
 import ls.sandbox.nbp.service.NbpSellExchangeRateService;
 import ls.sandbox.nbp.util.CommonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -88,14 +89,21 @@ public class NbpCurrencyController
      * @param currencyCodes list of currency codes according to ISO 4217 standard.
      * @return total purchasing cost.
      */
-    @PostMapping("/nbpPurchase/{date}")
-    public Double getPurchaseCost(@PathVariable("date") String date, @RequestBody List<String> currencyCodes)
+    @GetMapping("/nbpPurchase/{date}")
+    public Double getPurchaseCost(@PathVariable("date") String date, @PathParam(value = "currencyCodes") String currencyCodes)
     {
         Double result = null;
 
         try
         {
-            result = nbpMiddleExchangeRateService.getPurchaseCost(CommonUtils.parseDateFromString(date), currencyCodes);
+            JSONArray jsonArray = new JSONArray(currencyCodes);
+            List<String> codes = new ArrayList<>();
+
+            for(int i = 0; i < jsonArray.length(); i++) {
+                codes.add(jsonArray.getString(i));
+            }
+
+            result = nbpMiddleExchangeRateService.getPurchaseCost(CommonUtils.parseDateFromString(date), codes);
         }
         catch (Exception e)
         {
@@ -107,7 +115,7 @@ public class NbpCurrencyController
         if (null == result)
         {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, MessageFormat.format(
-                    "Purchase cost can''t be evaluated for code={0} date={1} !", currencyCodes, date));
+                    "Purchase cost can''t be evaluated for codes={0} date={1} !", currencyCodes, date));
         }
 
         return result;

@@ -63,11 +63,11 @@ class NbpCurrencyControllerTest
     @Test
     void getPurchaseCost()
     {
-        final String[] strings = { "USD", "AUD", "CAD" };
+        final String codes = "[\"USD\",\"AUD\",\"CAD\"]";
 
         final String date = CommonUtils.toStringFromDate(new Date());
 
-        Double result = controller.getPurchaseCost(date, Arrays.asList(strings));
+        Double result = controller.getPurchaseCost(date, codes);
 
         Assertions.assertNotNull(result);
 
