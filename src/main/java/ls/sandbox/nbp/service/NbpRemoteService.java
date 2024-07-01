@@ -32,6 +32,8 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 /**
+ * Service class for remote requests to NBP.
+ *
  * @author Lukasz.Stochlak
  */
 @Service
@@ -54,7 +56,7 @@ public class NbpRemoteService
     RestTemplateBuilder restTemplateBuilder;
 
     /**
-     * Calls NBP remote service for sell exchange rate for selected currency on a given day.
+     * Calls NBP remote service for a sell exchange rate for selected currency on a given day.
      *
      * @param code currency code according to ISO 4217 standard
      * @param date date
@@ -79,6 +81,16 @@ public class NbpRemoteService
                                             NbpMiddleExchangeRateDto.class);
     }
 
+    /**
+     * Calls selected NBP remote service.
+     *
+     * @param code currency code according to ISO 4217 standard.
+     * @param date date.
+     * @param url selected NBP remoteservice url.
+     * @param dtoClass expected DTO class.
+     * @return exchange currency rate DTO (<i>null</i> when value not found).
+     * @param <T> DTO object class extending {@link ls.sandbox.nbp.dto.ExchangeRateDto}
+     */
     private <T extends ExchangeRateDto> T geExchangeRateFromNbpService(String code, Date date, String url,
                                                                        Class<T> dtoClass)
     {
@@ -124,6 +136,14 @@ public class NbpRemoteService
         return result;
     }
 
+    /**
+     * Builds DTO from data received from NBP remote service.
+     *
+     * @param tableData data received from NBP remote service.
+     * @param dtoClass expected DTO class.
+     * @return built DTO object (<i>null</i> when value not found).
+     * @param <T> DTO object class extending {@link ls.sandbox.nbp.dto.ExchangeRateDto}
+     */
     private <T extends ExchangeRateDto> T buildDtoFromTableData(TableData tableData, Class<T> dtoClass)
     {
         T dto = null;

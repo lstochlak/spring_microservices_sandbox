@@ -55,7 +55,7 @@ public class LocalCacheService
     /**
      * Saves a sell rate in local cache.
      *
-     * @param dto DTO for {@link ls.sandbox.nbp.model.NbpSellExchangeRate}
+     * @param dto DTO object {@link ls.sandbox.nbp.dto.NbpSellExchangeRateDto}
      */
     public void cacheSellExchangeRate(NbpSellExchangeRateDto dto)
     {
@@ -65,13 +65,21 @@ public class LocalCacheService
     /**
      * Saves a middle rate in local cache.
      *
-     * @param dto DTO for {@link ls.sandbox.nbp.model.NbpMiddleExchangeRate}
+     * @param dto DTO object {@link ls.sandbox.nbp.dto.NbpMiddleExchangeRateDto}
      */
     public void cacheMiddleExchangeRate(NbpMiddleExchangeRateDto dto)
     {
         cacheExchangeRate(dto, new NbpMiddleExchangeRate(), nbpMiddleExchangeRateRepository);
     }
 
+    /**
+     * Saves echange rate in local cache.
+     *
+     * @param dto DTO object, extending {@link ls.sandbox.nbp.dto.ExchangeRateDto}, containing data to be saved in cache.
+     * @param obj class T model object.
+     * @param repo repository for T class objects (extending {@link ls.sandbox.nbp.repository.ExchangeRateRepository})
+     * @param <T> model object class extending {@link ls.sandbox.nbp.model.ExchangeRate}
+     */
     private <T extends ExchangeRate> void cacheExchangeRate(ExchangeRateDto dto, T obj, ExchangeRateRepository<T> repo)
     {
         Currency currency = new Currency();
@@ -89,9 +97,9 @@ public class LocalCacheService
     /**
      * Looks for a sell exchange rate of the selected currency on a given day.
      *
-     * @param code currency code according to ISO 4217 standard
+     * @param code currency code according to ISO 4217 standard.
      * @param date date
-     * @return DTO for {@link ls.sandbox.nbp.model.NbpSellExchangeRate}
+     * @return DTO object {@link ls.sandbox.nbp.dto.NbpSellExchangeRateDto} from local cache.
      */
     public NbpSellExchangeRateDto findSellExchangeRate(String code, Date date)
     {
@@ -107,9 +115,9 @@ public class LocalCacheService
     /**
      * Looks for a middle exchange rate of the selected currency on a given day.
      *
-     * @param code currency code according to ISO 4217 standard
+     * @param code currency code according to ISO 4217 standard.
      * @param date date
-     * @return DTO for {@link ls.sandbox.nbp.model.NbpMiddleExchangeRate}
+     * @return DTO object {@link ls.sandbox.nbp.dto.NbpMiddleExchangeRateDto}
      */
     public NbpMiddleExchangeRateDto findMiddleExchangeRate(String code, Date date)
     {
@@ -122,6 +130,15 @@ public class LocalCacheService
         return localRateDto;
     }
 
+    /**
+     * Looks for exchange rate in local database.
+     *
+     * @param code currency code according to ISO 4217 standard.
+     * @param date date.
+     * @param repo repository for T class objects (extending {@link ls.sandbox.nbp.repository.ExchangeRateRepository}).
+     * @return model object extending {@link ls.sandbox.nbp.model.ExchangeRate} found in local cache.
+     * @param <T> model object class extending {@link ls.sandbox.nbp.model.ExchangeRate}.
+     */
     private <T extends ExchangeRate> T findExchangeRate(String code, Date date, ExchangeRateRepository<T> repo)
     {
         T localRate = null;
@@ -141,7 +158,15 @@ public class LocalCacheService
         return localRate;
     }
 
-    private <T extends ExchangeRateDto> T buildDtoFromExchangeRate(ExchangeRate rate, Class<T> rateClass)
+    /**
+     * Builds DTO from model object.
+     *
+     * @param rate model object.
+     * @param dtoClass expected DTO class.
+     * @return
+     * @param <T> DTO object class extending {@link ls.sandbox.nbp.dto.ExchangeRateDto}.
+     */
+    private <T extends ExchangeRateDto> T buildDtoFromExchangeRate(ExchangeRate rate, Class<T> dtoClass)
     {
         T dto = null;
 
@@ -151,7 +176,7 @@ public class LocalCacheService
             {
                 CurrencyDto currency = new CurrencyDto(rate.getCurrency().getCode(), rate.getCurrency().getCurrency());
 
-                dto = rateClass.getDeclaredConstructor(Long.class, Date.class, Double.class, CurrencyDto.class)
+                dto = dtoClass.getDeclaredConstructor(Long.class, Date.class, Double.class, CurrencyDto.class)
                         .newInstance(rate.getId(), rate.getDate(), rate.getRate(), currency);
             }
             catch (InstantiationException | IllegalAccessException | InvocationTargetException |

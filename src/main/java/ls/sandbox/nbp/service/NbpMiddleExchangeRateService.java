@@ -46,7 +46,7 @@ public class NbpMiddleExchangeRateService
      * <br>
      * First checks locally if can't find calls NBP service and writes results locally.
      *
-     * @param date  date in RRRR-MM-DD (ISO 8601) format
+     * @param date  date
      * @param codes list of currency codes according to ISO 4217 standard
      * @return total cost
      */
@@ -72,6 +72,9 @@ public class NbpMiddleExchangeRateService
         return result[0];
     }
 
+    /**
+     * Evaluates purchase cost.
+     */
     private void evaluatePurchaseCost(Date date, String code, Double[] result, String dateAsString)
     {
         try
@@ -95,6 +98,8 @@ public class NbpMiddleExchangeRateService
 
                 if (null != rateDto)
                 {
+                    localCacheService.cacheMiddleExchangeRate(rateDto);
+
                     result[0] += rateDto.getRate();
                 }
                 else
