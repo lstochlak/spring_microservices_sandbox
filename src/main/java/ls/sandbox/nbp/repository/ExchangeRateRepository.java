@@ -21,7 +21,7 @@ import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
 
 /**
- * Abstract repository for {@link ls.sandbox.nbp.model.ExchangeRate}
+ * Abstract repository for {@link ls.sandbox.nbp.model.ExchangeRate} model objects.
  *
  * @author Lukasz.Stochlak
  */

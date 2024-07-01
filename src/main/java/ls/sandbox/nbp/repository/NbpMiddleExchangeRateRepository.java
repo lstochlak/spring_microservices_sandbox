@@ -16,7 +16,7 @@ package ls.sandbox.nbp.repository;
 import ls.sandbox.nbp.model.NbpMiddleExchangeRate;
 
 /**
- * Repository for {@link ls.sandbox.nbp.model.NbpMiddleExchangeRate}
+ * Repository for {@link ls.sandbox.nbp.model.NbpMiddleExchangeRate} model objects.
  *
  * @author Lukasz.Stochlak
  */

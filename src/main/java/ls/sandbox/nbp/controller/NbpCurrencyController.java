@@ -13,6 +13,7 @@
 //------------------------------------------------------------------------------
 package ls.sandbox.nbp.controller;
 
+import java.text.MessageFormat;
 import java.util.List;
 import javax.persistence.EntityNotFoundException;
 import lombok.extern.log4j.Log4j2;
@@ -50,9 +51,9 @@ public class NbpCurrencyController
     /**
      * Returns NBP sell exchange rate.
      *
-     * @param date date in RRRR-MM-DD (ISO 8601) format
+     * @param date date in RRRR-MM-DD (ISO 8601) format.
      * @param code currency code according to ISO 4217 standard
-     * @return sell exchange rate
+     * @return sell exchange rate.
      */
     @GetMapping("/nbpSell/{code}/{date}")
     public Double getSellExchangeRate(@PathVariable("code") String code, @PathVariable("date") String date)
@@ -65,14 +66,16 @@ public class NbpCurrencyController
         }
         catch (Exception e)
         {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error! " + e.getMessage(),
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                                              MessageFormat.format("Unexpected error! {0}", e.getMessage()),
                                               e);
         }
 
         if (null == result)
         {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                                              "Exchange rate not found for code=" + code + " date=" + date + " !");
+                                              MessageFormat.format("Exchange rate not found for code={0} date={1} !",
+                                                                   code, date));
         }
 
         return result;
@@ -81,8 +84,8 @@ public class NbpCurrencyController
     /**
      * Calculates the total purchasing cost in PLN of given list of foreign currencies for given date.
      *
-     * @param date          date in RRRR-MM-DD (ISO 8601) format
-     * @param currencyCodes list of currency codes according to ISO 4217 standard
+     * @param date          date in RRRR-MM-DD (ISO 8601) format.
+     * @param currencyCodes list of currency codes according to ISO 4217 standard.
      * @return total purchasing cost.
      */
     @PostMapping("/nbpPurchase/{date}")
@@ -96,15 +99,15 @@ public class NbpCurrencyController
         }
         catch (Exception e)
         {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error! " + e.getMessage(),
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                                              MessageFormat.format("Unexpected error! {0}", e.getMessage()),
                                               e);
         }
 
         if (null == result)
         {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                                              "Purchase cost can't be evaluated for code=" + currencyCodes + " date="
-                                              + date + " !");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, MessageFormat.format(
+                    "Purchase cost can''t be evaluated for code={0} date={1} !", currencyCodes, date));
         }
 
         return result;

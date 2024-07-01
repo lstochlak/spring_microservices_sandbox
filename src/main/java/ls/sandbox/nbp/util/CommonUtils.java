@@ -41,8 +41,8 @@ public class CommonUtils
     /**
      * Parses date from string. It expects "yyyy-MM-dd" format.
      *
-     * @param date date as string in "yyyy-MM-dd" pattern (ISO 8601 standard)
-     * @return parsed date
+     * @param date date as string in "yyyy-MM-dd" pattern (ISO 8601 standard).
+     * @return parsed date.
      */
     public static Date parseDateFromString(String date)
     {

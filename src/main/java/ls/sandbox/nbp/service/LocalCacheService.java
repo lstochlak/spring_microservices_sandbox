@@ -55,7 +55,7 @@ public class LocalCacheService
     /**
      * Saves a sell rate in local cache.
      *
-     * @param dto DTO object {@link ls.sandbox.nbp.dto.NbpSellExchangeRateDto}
+     * @param dto DTO object {@link ls.sandbox.nbp.dto.NbpSellExchangeRateDto}.
      */
     public void cacheSellExchangeRate(NbpSellExchangeRateDto dto)
     {
@@ -65,7 +65,7 @@ public class LocalCacheService
     /**
      * Saves a middle rate in local cache.
      *
-     * @param dto DTO object {@link ls.sandbox.nbp.dto.NbpMiddleExchangeRateDto}
+     * @param dto DTO object {@link ls.sandbox.nbp.dto.NbpMiddleExchangeRateDto}.
      */
     public void cacheMiddleExchangeRate(NbpMiddleExchangeRateDto dto)
     {
@@ -77,8 +77,8 @@ public class LocalCacheService
      *
      * @param dto DTO object, extending {@link ls.sandbox.nbp.dto.ExchangeRateDto}, containing data to be saved in cache.
      * @param obj class T model object.
-     * @param repo repository for T class objects (extending {@link ls.sandbox.nbp.repository.ExchangeRateRepository})
-     * @param <T> model object class extending {@link ls.sandbox.nbp.model.ExchangeRate}
+     * @param repo repository for T class objects (extending {@link ls.sandbox.nbp.repository.ExchangeRateRepository}).
+     * @param <T> model object class extending {@link ls.sandbox.nbp.model.ExchangeRate}.
      */
     private <T extends ExchangeRate> void cacheExchangeRate(ExchangeRateDto dto, T obj, ExchangeRateRepository<T> repo)
     {
@@ -98,7 +98,7 @@ public class LocalCacheService
      * Looks for a sell exchange rate of the selected currency on a given day.
      *
      * @param code currency code according to ISO 4217 standard.
-     * @param date date
+     * @param date date.
      * @return DTO object {@link ls.sandbox.nbp.dto.NbpSellExchangeRateDto} from local cache.
      */
     public NbpSellExchangeRateDto findSellExchangeRate(String code, Date date)
@@ -116,7 +116,7 @@ public class LocalCacheService
      * Looks for a middle exchange rate of the selected currency on a given day.
      *
      * @param code currency code according to ISO 4217 standard.
-     * @param date date
+     * @param date date.
      * @return DTO object {@link ls.sandbox.nbp.dto.NbpMiddleExchangeRateDto}
      */
     public NbpMiddleExchangeRateDto findMiddleExchangeRate(String code, Date date)
@@ -163,7 +163,7 @@ public class LocalCacheService
      *
      * @param rate model object.
      * @param dtoClass expected DTO class.
-     * @return
+     * @return built DTO object.
      * @param <T> DTO object class extending {@link ls.sandbox.nbp.dto.ExchangeRateDto}.
      */
     private <T extends ExchangeRateDto> T buildDtoFromExchangeRate(ExchangeRate rate, Class<T> dtoClass)
