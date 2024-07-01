@@ -14,7 +14,6 @@
 package ls.sandbox.nbp.service;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
 import java.util.Date;
 import lombok.extern.log4j.Log4j2;
 import ls.sandbox.nbp.dto.CurrencyDto;
@@ -25,7 +24,10 @@ import ls.sandbox.nbp.dto.TableData;
 import ls.sandbox.nbp.util.CommonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -42,6 +44,12 @@ public class NbpRemoteService
     protected static final String RETRIEVED_NBP_SERVICE_FOR_CODE_AND_DATE =
             "Successfully retrieved NBP service for code={} and date={} -> {}";
 
+    protected static final String URL_NBP_TABLE_A_MIDDLE_EXCHANGE_RATE =
+            "http://api.nbp.pl/api/exchangerates/rates/A/{code}/{date}";
+
+    protected static final String URL_NBP_TABLE_C_SELL_EXCHANGE_RATE =
+            "http://api.nbp.pl/api/exchangerates/rates/C/{code}/{date}";
+
     @Autowired
     RestTemplateBuilder restTemplateBuilder;
 
@@ -54,31 +62,8 @@ public class NbpRemoteService
      */
     public NbpSellExchangeRateDto getSellExchangeRateFromNbpService(String code, Date date)
     {
-        String dateAsString = CommonUtils.toStringFromDate(date);
-        RestTemplate restTemplate = restTemplateBuilder.build();
-
-        TableData nbpTableData = null;
-        NbpSellExchangeRateDto result = null;
-
-        log.info(CALLING_REMOTE_NBP_SERVICE);
-
-        try
-        {
-            nbpTableData = restTemplate.getForObject("http://api.nbp.pl/api/exchangerates/rates/C/{code}/{date}",
-                                                     TableData.class, code, dateAsString);
-
-            log.debug(RETRIEVED_NBP_SERVICE_FOR_CODE_AND_DATE, code, dateAsString, nbpTableData);
-        }
-        catch (RestClientException e)
-        {
-            log.info(CommonUtils.UNEXPECTED_REQUEST_FAIL, e.getMessage());
-
-            throw e;
-        }
-
-        result = buildDto(nbpTableData);
-
-        return result;
+        return geExchangeRateFromNbpService(code, date, URL_NBP_TABLE_C_SELL_EXCHANGE_RATE,
+                                            NbpSellExchangeRateDto.class);
     }
 
     /**
@@ -90,34 +75,56 @@ public class NbpRemoteService
      */
     public NbpMiddleExchangeRateDto getMiddleExchangeRateFromNbpService(String code, Date date)
     {
+        return geExchangeRateFromNbpService(code, date, URL_NBP_TABLE_A_MIDDLE_EXCHANGE_RATE,
+                                            NbpMiddleExchangeRateDto.class);
+    }
+
+    private <T extends ExchangeRateDto> T geExchangeRateFromNbpService(String code, Date date, String url,
+                                                                       Class<T> dtoClass)
+    {
         String dateAsString = CommonUtils.toStringFromDate(date);
         RestTemplate restTemplate = restTemplateBuilder.build();
 
         TableData nbpTableData = null;
-        NbpMiddleExchangeRateDto result = null;
+        T result = null;
 
         log.info(CALLING_REMOTE_NBP_SERVICE);
 
+        ResponseEntity<TableData> responseEntity = null;
         try
         {
-            nbpTableData = restTemplate.getForObject("http://api.nbp.pl/api/exchangerates/rates/A/{code}/{date}",
-                                                     TableData.class, code, dateAsString);
-            log.debug(RETRIEVED_NBP_SERVICE_FOR_CODE_AND_DATE, code, dateAsString, nbpTableData);
+            responseEntity = restTemplate.getForEntity(url, TableData.class, code, dateAsString);
+
+            if (responseEntity.getStatusCode().equals(HttpStatus.OK) && null != responseEntity.getBody())
+            {
+                nbpTableData = responseEntity.getBody();
+
+                log.debug(RETRIEVED_NBP_SERVICE_FOR_CODE_AND_DATE, code, dateAsString, nbpTableData);
+
+                result = buildDtoFromTableData(nbpTableData, dtoClass);
+            }
+        }
+        catch (HttpClientErrorException.NotFound e)
+        {
+            log.debug(
+                    "404 response received from NBP remote service - currency exchange rate not found! code={} dte={}",
+                    code, dateAsString);
+        }
+        catch (HttpClientErrorException e)
+        {
+            log.debug("Unexpected {} response received from NBP remote service! code={} dte={}", e.getStatusCode(),
+                      code, dateAsString);
         }
         catch (RestClientException e)
         {
-            log.info(CommonUtils.UNEXPECTED_REQUEST_FAIL, e.getMessage());
-
-            throw e;
+            log.debug(CommonUtils.UNEXPECTED_REQUEST_FAIL, e.getMessage());
+            throw new UnexpectedServiceException(e);
         }
-
-        result = buildDto(nbpTableData);
 
         return result;
     }
 
-    @SuppressWarnings("unchecked")
-    private <T extends ExchangeRateDto> T buildDto(TableData tableData)
+    private <T extends ExchangeRateDto> T buildDtoFromTableData(TableData tableData, Class<T> dtoClass)
     {
         T dto = null;
 
@@ -125,23 +132,22 @@ public class NbpRemoteService
         {
             try
             {
-                ParameterizedType superClass = (ParameterizedType) getClass().getGenericSuperclass();
-
-                Class<T> type = (Class<T>) superClass.getActualTypeArguments()[0];
-
                 CurrencyDto currency = new CurrencyDto(tableData.getCode(), tableData.getCurrency());
 
-                dto = type.getDeclaredConstructor(Long.class, Date.class, Double.class, CurrencyDto.class)
+                dto = dtoClass.getDeclaredConstructor(Long.class, Date.class, Double.class, CurrencyDto.class)
                         .newInstance(null,
                                      CommonUtils.parseDateFromString(tableData.getRates().get(0).getEffectiveDate()),
-                                     Double.parseDouble(tableData.getRates().get(0).getAsk()), currency);
+                                     Double.parseDouble(
+                                             null != tableData.getRates().get(0).getAsk() ? tableData.getRates().get(0)
+                                                     .getAsk() : tableData.getRates().get(0).getMid()),
+                                     currency);
             }
             catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                    NoSuchMethodException e)
             {
-                log.fatal("Unexpected error while building exchange rate dto.", e);
+                log.fatal("Unexpected error while building exchange rate dto!", e);
 
-                throw new RuntimeException(e); //@TODO introduce own exception (?)
+                throw new UnexpectedServiceException(e);
             }
         }
 

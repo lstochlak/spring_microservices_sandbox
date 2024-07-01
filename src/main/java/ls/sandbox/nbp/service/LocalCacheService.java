@@ -14,7 +14,6 @@
 package ls.sandbox.nbp.service;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
 import java.util.Date;
 import javax.persistence.EntityNotFoundException;
 import lombok.extern.log4j.Log4j2;
@@ -100,7 +99,7 @@ public class LocalCacheService
 
         NbpSellExchangeRate localRate = findExchangeRate(code, date, nbpSellExchangeRateRepository);
 
-        localRateDto = buildDto(localRate);
+        localRateDto = buildDtoFromExchangeRate(localRate, NbpSellExchangeRateDto.class);
 
         return localRateDto;
     }
@@ -118,7 +117,7 @@ public class LocalCacheService
 
         NbpMiddleExchangeRate localRate = findExchangeRate(code, date, nbpMiddleExchangeRateRepository);
 
-        localRateDto = buildDto(localRate);
+        localRateDto = buildDtoFromExchangeRate(localRate, NbpMiddleExchangeRateDto.class);
 
         return localRateDto;
     }
@@ -142,8 +141,7 @@ public class LocalCacheService
         return localRate;
     }
 
-    @SuppressWarnings("unchecked")
-    private <T extends ExchangeRateDto> T buildDto(ExchangeRate rate)
+    private <T extends ExchangeRateDto> T buildDtoFromExchangeRate(ExchangeRate rate, Class<T> rateClass)
     {
         T dto = null;
 
@@ -151,13 +149,9 @@ public class LocalCacheService
         {
             try
             {
-                ParameterizedType superClass = (ParameterizedType) getClass().getGenericSuperclass();
-
-                Class<T> type = (Class<T>) superClass.getActualTypeArguments()[0];
-
                 CurrencyDto currency = new CurrencyDto(rate.getCurrency().getCode(), rate.getCurrency().getCurrency());
 
-                dto = type.getDeclaredConstructor(Long.class, Date.class, Double.class, CurrencyDto.class)
+                dto = rateClass.getDeclaredConstructor(Long.class, Date.class, Double.class, CurrencyDto.class)
                         .newInstance(rate.getId(), rate.getDate(), rate.getRate(), currency);
             }
             catch (InstantiationException | IllegalAccessException | InvocationTargetException |
@@ -165,7 +159,7 @@ public class LocalCacheService
             {
                 log.fatal("Unexpected error while building exchange rate dto.", e);
 
-                throw new RuntimeException(e); //@TODO introduce own exception (?)
+                throw new UnexpectedServiceException(e);
             }
         }
 

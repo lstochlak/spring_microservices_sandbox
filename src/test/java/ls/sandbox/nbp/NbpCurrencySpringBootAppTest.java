@@ -30,11 +30,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.bind.annotation.RequestBody;
-import scala.Product;
 
 /**
  * @author Lukasz.Stochlak
@@ -56,7 +56,8 @@ class NbpCurrencySpringBootAppTest
 
     @Test
     @Order(1)
-    void servicePortTest() {
+    void servicePortTest()
+    {
         int port = serverProperties.getPort();
 
         Assertions.assertEquals(DEFINED_PORT, port);
@@ -67,11 +68,27 @@ class NbpCurrencySpringBootAppTest
     void nbpSellServicesTest()
     {
         String date = CommonUtils.toStringFromDate(new Date());
+
         String code = "USD";
 
-        Double response = this.restTemplate.getForObject("http://localhost:8090/api/currency/nbpSell/{code}/{date}", Double.class, code, date);
+        Double response = null;
 
-        Assertions.assertNotNull(response);
+        ResponseEntity<Double> responseEntity =
+                this.restTemplate.getForEntity("http://localhost:8090/api/currency/nbpSell/{code}/{date}", Double.class,
+                                               code, date);
+
+        Assertions.assertNotNull(responseEntity);
+
+        if (responseEntity.getStatusCode().equals(HttpStatus.OK))
+        {
+            response = responseEntity.getBody();
+
+            Assertions.assertNotNull(response);
+        }
+        else
+        {
+            Assertions.assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        }
 
         log.info("Result: {}", response);
     }
@@ -84,9 +101,25 @@ class NbpCurrencySpringBootAppTest
 
         HttpEntity<List<String>> request = new HttpEntity<>(Arrays.asList("USD", "AUD", "CAD"));
 
-        Double response = this.restTemplate.postForObject("http://localhost:8090/api/currency/nbpPurchase/{date}", request, Double.class, date);
+        Double response = null;
 
-        Assertions.assertNotNull(response);
+        ResponseEntity<Double> responseEntity =
+                this.restTemplate.postForEntity("http://localhost:8090/api/currency/nbpPurchase/{date}", request,
+                                                Double.class, date);
+
+        Assertions.assertNotNull(responseEntity);
+
+        if (responseEntity.getStatusCode().equals(HttpStatus.OK))
+        {
+            response = responseEntity.getBody();
+
+            Assertions.assertNotNull(response);
+        }
+        else
+        {
+
+            Assertions.assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        }
 
         log.info("Result: {}", response);
     }

@@ -54,8 +54,20 @@ public class NbpMiddleExchangeRateService
     {
         final Double[] result = { 0.0 };
         final String dateAsString = CommonUtils.toStringFromDate(date);
+        final boolean[] brake = { false };
 
-        codes.forEach(code -> evaluatePurchaseCost(date, code, result, dateAsString));
+        codes.forEach(code ->
+                      {
+                          evaluatePurchaseCost(date, code, result, dateAsString);
+                          if (brake[0])
+                          {
+                              return;
+                          }
+                          if (null != result[0])
+                          {
+                              brake[0] = true;
+                          }
+                      });
 
         return result[0];
     }
@@ -83,8 +95,13 @@ public class NbpMiddleExchangeRateService
 
                 if (null != rateDto)
                 {
-
-                    result[0] += rateDto.getRate(); //@TODO add value check (?)
+                    result[0] += rateDto.getRate();
+                }
+                else
+                {
+                    log.log(Level.INFO, "Sell exchange rate for code=" + code + " and date=" + dateAsString
+                                        + " not found in remote NBP service!");
+                    result[0] = null;
                 }
             }
         }
