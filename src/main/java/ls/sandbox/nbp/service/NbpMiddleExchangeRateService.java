@@ -18,9 +18,7 @@ import java.util.List;
 import lombok.extern.log4j.Log4j2;
 import ls.sandbox.nbp.dto.NbpMiddleExchangeRateDto;
 import ls.sandbox.nbp.util.CommonUtils;
-import org.apache.logging.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -37,9 +35,6 @@ public class NbpMiddleExchangeRateService
 
     @Autowired
     private NbpRemoteService nbpRemoteService;
-
-    @Autowired
-    RestTemplateBuilder restTemplateBuilder;
 
     /**
      * Returns total purchasing cost in PLN of given list of foreign currencies for given date.
@@ -59,10 +54,12 @@ public class NbpMiddleExchangeRateService
         codes.forEach(code ->
                       {
                           evaluatePurchaseCost(date, code, result, dateAsString);
+
                           if (brake[0])
                           {
                               return;
                           }
+
                           if (null != result[0])
                           {
                               brake[0] = true;
@@ -90,8 +87,7 @@ public class NbpMiddleExchangeRateService
             }
             else
             {
-                log.log(Level.INFO, "Sell exchange rate for code=" + code + " and date=" + dateAsString
-                                    + " not found in local DB.");
+                log.info("Sell exchange rate for code={} and date={} not found in local DB.", code, dateAsString);
 
                 //call NBP service
                 NbpMiddleExchangeRateDto rateDto = nbpRemoteService.getMiddleExchangeRateFromNbpService(code, date);
@@ -104,15 +100,15 @@ public class NbpMiddleExchangeRateService
                 }
                 else
                 {
-                    log.log(Level.INFO, "Sell exchange rate for code=" + code + " and date=" + dateAsString
-                                        + " not found in remote NBP service!");
+                    log.info("Sell exchange rate for code={} and date={} not found in remote NBP service!", code,
+                             dateAsString);
                     result[0] = null;
                 }
             }
         }
         catch (Exception e)
         {
-            log.log(Level.ERROR, "Unexpected exception! " + e.getMessage(), e);
+            log.error("Unexpected exception! {}", e.getMessage(), e);
 
             throw e;
         }

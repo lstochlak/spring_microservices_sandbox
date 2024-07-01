@@ -53,7 +53,7 @@ public class NbpRemoteService
             "http://api.nbp.pl/api/exchangerates/rates/C/{code}/{date}";
 
     @Autowired
-    RestTemplateBuilder restTemplateBuilder;
+    private RestTemplateBuilder restTemplateBuilder;
 
     /**
      * Calls NBP remote service for a sell exchange rate for selected currency on a given day.
@@ -119,12 +119,12 @@ public class NbpRemoteService
         catch (HttpClientErrorException.NotFound e)
         {
             log.debug(
-                    "404 response received from NBP remote service - currency exchange rate not found! code={} dte={}",
+                    "404 response received from NBP remote service - currency exchange rate not found! code={} date={}",
                     code, dateAsString);
         }
         catch (HttpClientErrorException e)
         {
-            log.debug("Unexpected {} response received from NBP remote service! code={} dte={}", e.getStatusCode(),
+            log.debug("Unexpected {} response received from NBP remote service! code={} date={}", e.getStatusCode(),
                       code, dateAsString);
         }
         catch (RestClientException e)
